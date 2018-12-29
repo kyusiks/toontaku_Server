@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html> 
+<html> 
+	<head> 
+
+		<title>toontaku</title> 
+
+	  <meta charset="utf-8" />
+	  <meta name="viewport" content="width=device-width, initial-scale=1">
+	  <link rel="stylesheet" href="css/themes/toontakuTheme.css" />
+	  <link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
+	  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.2/jquery.mobile.structure-1.4.2.min.css" /> 
+	  <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script> 
+	  <script src="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.js"></script> 
+
+	  <script src="string.js"></script> 
+	  <script src="comn.js"></script> 
+
+		<script type="text/javascript">
+			var gv_setting;
+			var gv_nav=[$app_name, "", "", ""];
+			
+			$(document).ready(function() { //동적으로 원격에 있는 JSON파일(결과값)을 로드
+				fn_ajaxCall("2", "0");
+				fn_ajaxCall("P1", "");
+				//window.parent.fn_call("gg");
+			});
+
+			//내비게이션 멘트
+			function fn_nav(pStr) {
+				var vStr="";
+      	$.each(gv_nav, function(key, item) {
+				  if ( gv_nav[key] != "" ) vStr += ((vStr!="")? " > " : "") + gv_nav[key];
+					$('#ttk_nav' + key).html(vStr);
+			  })
+			}
+
+			function fn_ajaxCall(pMode, pParam) {
+				$.ajax({
+					  type : "POST"
+					, url: "http://anglab.dothome.co.kr/toontaku/b.php?pMode=" + pMode + "&pParam=" + pParam
+					, dataType : "jsonp"
+					, jsonp : "callback"
+					, success : function(data) { fn_ajaxCallback(data, pMode, pParam); }
+				  , error: function(e) {alert("Error : " + e ); }
+			  })
+			}
+
+			var gv_ArrayMode=['P0','P1','P2','P3','P4','P0'];
+			function fn_ajaxCallback(data, pMode, pParam) {
+				var vView="#lst_view_" + pMode;
+				var vNextMode=gv_ArrayMode[gv_ArrayMode.indexOf(pMode) + 1];
+				var vNav="";
+
+				if ( pMode == "2" ) {
+					gv_setting=data.pList;
+
+				} else if ( pMode == "0" ) {
+					vNav=$app_name + " > " + $str_myList;
+				} else if ( pMode == "P1" ) {
+					gv_nav[1]=$str_search;
+				  $(vView).html("");
+        	$.each(data.pList, function(key, item) {
+					  $(vView).append("<li class=\"ttk_list01\"><a href='#page_step_" + vNextMode + "' onclick=\"fn_listOnClick('" + vNextMode + "', '" + item.SITE + "','" + item.NAME + "')\" data-transition=\"slide\"><h1>" + item.NAME + "</h1></a></li>");
+				  })
+				  $(vView).listview("refresh");
+				} else if ( pMode == "P2" ) {
+					//vNav=gv_nav;
+				  $(vView).html("");
+        	$.each(data.pList, function(key, item) {
+						var vUrl=fn_urlReplace("THUMB_COMN", item.SITE, item.CID, item.LINK_CODE, item.THUMB_NAIL);
+					  $(vView).append("<li><a href='#page_step_" + vNextMode + "' onclick=\"fn_listOnClick('" + vNextMode + "', '" + item.ID_SEQ + "|" + "0" + "','" + item.NAME + "')\" data-transition=\"slide\"><img src=\"" + vUrl + "\"> <h1>" + item.NAME + "</h1></a></li>");
+				  })
+				  $(vView).listview("refresh");
+
+				} else if ( pMode == "P3" ) {
+					//vNav=gv_nav;
+				  $(vView).html("");
+        	$.each(data.pList, function(key, item) {
+						var vUrl=fn_urlReplace("THUMB_COMN", item.SITE, item.CID, item.LINK_CODE, item.THUMB_NAIL);
+						var vImg=fn_urlReplace("IMG_VIEWER", item.SITE, item.CID, item.LINK_CODE, "");
+					  $(vView).append("<li><a href='#page_step_" + vNextMode + "' onclick=\"fn_listOnClick('" + vNextMode + "', '" + vImg + "')\" data-transition=\"slide\"><img src=\"" + vUrl + "\"> <h1>" + item.NAME + "</h1></a></li>");
+				  })
+				  $(vView).listview("refresh");
+				} else if ( pMode == "P4" ) {
+					//vNav=gv_nav;
+				} else if ( pMode == "P5" ) {
+					vNav=$app_name + " > " + $str_setting;
+				}
+
+				fn_nav(vNav);
+			}
+
+			function fn_listOnClick(pMode, pParam, pNav) {
+				console.log(pMode);
+				console.log(pParam);
+				console.log(pNav);
+				window.parent.fn_listOnClick(pMode, pParam, pNav);
+			}
+
+			function fn_findSetting(pSite, pParam) {
+				var vRtn="";
+        $.each(gv_setting, function(key, item) {
+        	if ( item.SITE == pSite ) {
+        		if ( pParam == "THUMB_COMN" ) {
+        			vRtn=item.THUMB_COMN;
+        		} else if ( pParam == "IMG_VIEWER" ) {
+        			vRtn=item.IMG_VIEWER;
+        		} else if ( pParam == "" ) {
+        		}
+        	}
+        });
+        return vRtn;
+			}
+
+			// 썸네일 주소 생성
+			function fn_urlReplace(pColumn, pSite, pCid, pNo, pThumb) {
+				var vUrl=fn_findSetting(pSite, pColumn);
+				if ( vUrl == "" ) return;
+				vUrl=(vUrl + pThumb).replace("$cid", pCid).replace("$no", pNo);
+				return vUrl;
+			}
+			
+			
+			function fn_pageMove(pMode) {
+				$(location).attr('href','#page_step_' + pMode);
+			}
+			
+			
+			
+			
+		</script>
+	</head>
+
+
+
+	<body id="bbody">
+	  <div data-role="page" id="page_step_P1">
+			<div data-role="content">
+	       <ul id="lst_view_P1" data-role="listview" data-insert="true">
+	       </ul>
+			</div>
+	  </div>
+
+		<div data-role="page" id="page_step_P2">
+			<div data-role="content">
+	       <ul id="lst_view_P2" data-role="listview" data-insert="true">
+	       </ul>
+			</div>
+		</div>
+
+		<div data-role="page" id="page_step_P3">
+			<div data-role="content">
+	       <ul id="lst_view_P3" data-role="listview" data-insert="true">
+	       </ul>
+			</div>
+		</div>
+	</body>
+</html>

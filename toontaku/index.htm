@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html> 
+<html> 
+	<head> 
+
+		<title>toontaku</title> 
+
+	  <meta charset="utf-8" />
+	  <meta name="viewport" content="width=device-width, initial-scale=1">
+	  <link rel="stylesheet" href="css/themes/toontakuTheme.css" />
+	  <link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
+	  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.2/jquery.mobile.structure-1.4.2.min.css" /> 
+	  <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script> 
+	  <script src="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.js"></script> 
+
+	  <script src="string.js"></script> 
+	  <script src="comn.js"></script> 
+
+		<script type="text/javascript">
+			var gv_setting;
+			var gv_nav = [$app_name, "", "", ""];
+
+			$(document).ready(function() {
+				fn_fixHeight();
+				fn_setFooter();
+				
+ // $('#web_view')[0].contentWindow.alert("fff"); // 프레임 내의 함수 호출  
+				
+			});
+			
+			$(window).resize(function () {
+				fn_fixHeight();
+			});
+
+			function fn_fixHeight() {
+				$('#web_view').css('width', '100%');
+				$('#web_view').css('height', $(window).height() - 15); // $(window).height() - 15 - 32 header15, footter32
+				$('.ui-content').css('padding', "15px 0 0 0"); //TODO 확인해볼것
+			}
+
+			function fn_setFooter() {
+				var vStr = "<img id='ic_mn_mylist' src='img/ic_mn_mylist_b.png' class='ttk_btn_bottoms'>"
+				         + "<img id='ic_mn_add' src='img/ic_mn_add_b.png' class='ttk_btn_bottoms'>"
+				         + "<img id='ic_mn_setting' src='img/ic_mn_setting_b.png' class='ttk_btn_bottoms'>";
+				$('.ttk-footer').html(vStr);
+
+				$(".ttk_btn_bottoms").bind("touchstart", function(e) { fn_touchstart(e); });
+				$(".ttk_btn_bottoms").bind("touchend", function(e) { fn_touchend(e); });
+				// 모바일 버전은 아래를 빼도 되지만 그냥 넣자.
+				$(".ttk_btn_bottoms").bind("mousedown", function(e) { fn_touchstart(e); });
+				$(".ttk_btn_bottoms").bind("mouseup", function(e) { fn_touchend(e); });
+				$(".ttk_btn_bottoms").bind("mouseout", function(e) { fn_touchend(e); });
+			}
+
+			function fn_call(pParam) {
+				alert("Ddd");
+			}			
+
+			function fn_touchstart(e) {
+				e.target.src = (e.target.src).replace("_b.png", ".png");
+
+				var vId = e.target.id;
+				if ( vId == "ic_mn_mylist" ) {
+					fn_ajaxCall("P1", "");
+				} else if ( vId == "ic_mn_add" ) {
+				} else if ( vId == "ic_mn_setting" ) {
+				} else if ( vId == "" ) {
+				} else if ( vId == "" ) {
+				}
+			}
+			function fn_touchend(e) {
+				e.target.src = (e.target.src).replace(".png", "_b.png").replace("_b_b.png", "_b.png");
+			}
+
+			//내비게이션 멘트
+			function fn_nav(pStr) {
+				var vStr = "";
+      	$.each(gv_nav, function(key, item) {
+				  if ( gv_nav[key] != "" ) vStr += ((vStr!="")? " > " : "") + gv_nav[key];
+					$(".ttk_nav").html(vStr);
+			  })
+			}
+
+			function fn_listOnClick(pMode, pParam, pNav) {
+				
+				var $frame = $('#web_view')[0].contentWindow;
+
+				if ( pMode == "P1" ) {
+					if ( pNav != "" ) gv_nav[1]=pNav;
+					gv_nav[2]="";
+					gv_nav[3]="";
+				} else if ( pMode == "P2" ) {
+					if ( pNav != "" ) gv_nav[2]=pNav;
+					gv_nav[3]="";
+				} else if ( pMode == "P3" ) {
+					if ( pNav != "" ) gv_nav[3]=pNav;
+				}
+
+				if ( pMode == "P4" ) {
+					console.log($(window).height());
+					//$("#web_view").get(0).src=pParam;
+					//parent.fn_call(pParam);
+					
+					$(location).attr('href','#page_view');
+					$("#web_view").get(0).src = pParam;
+					
+				} else {
+					$frame.fn_ajaxCall(pMode, pParam);
+				}
+
+				$frame.fn_pageMove(pMode);
+ 
+			}
+		</script>
+	</head>
+
+
+	<body id="bbody" style="overflow: hidden;overflow-x: hidden;">
+	  <div data-role="page" id="page_list">
+			<div data-position="fixed">
+				<p class="ttk_nav">툰덕후</p>
+			</div>
+			<div data-role="content">
+				<iframe id="web_view" src="list.htm" frameborder="0" marginwidth="0" marginheight="0" scrolling="auto"></iframe>
+			</div>
+			<div class="ttk-footer" data-role="footer" data-position="fixed" style="filter:alpha(opacity=60); opacity:.6;">
+			</div>
+	  </div>
+
+	  <div data-role="page" id="page_view">
+			<div data-position="fixed">
+				<p class="ttk_nav">툰덕후</p>
+			</div>
+			<div data-role="content">
+				<iframe id="web_view_viewer" src="" frameborder="0" marginwidth="0" marginheight="0" scrolling="auto"></iframe>
+			</div>
+			<div class="ttk-footer" data-role="footer" data-position="fixed" style="filter:alpha(opacity=60); opacity:.6;">
+			</div>
+	  </div>
+<!--
+<script>
+var $frame = $('#iframe');
+$frame.contents().find('body').click(function(){  alert('click');  });    // 프레임내의 객체 컨트롤
+var fn = $frame[0].contentWindow['test']; // child.html 내의 자바스크립트 함수 호출
+fn(1, 2);
+</script>
+<iframe id="iframe" src='child.html'></iframe>
+		-->
+	</body>
+</html>
